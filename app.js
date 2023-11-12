@@ -26,7 +26,7 @@ const initializeDBAndServer = async () => {
 initializeDBAndServer();
 
 const validation = (request, response, next) => {
-  const { priority, status, category, date = "" } = request.query;
+  const { priority, status, category, date, searchQ } = request.query;
   const priority_arr = ["HIGH", "MEDIUM", "LOW"];
   const status_arr = ["TO DO", "IN PROGRESS", "DONE"];
   const category_arr = ["WORK", "HOME", "LEARNING"];
@@ -69,7 +69,7 @@ const validation = (request, response, next) => {
       response.send("Invalid Due Date");
     }
   }
-
+  request.searchQ = searchQ;
   next();
 };
 
@@ -79,9 +79,9 @@ app.get("/todos/", validation, async (request, response) => {
     priority = "",
     status = "",
     category = "",
-    searchQ = "",
+    search_q = "",
   } = request.query;
-  const dbQuery = `SELECT id,todo,category,priority,status,due_date AS dueDate FROM todo WHERE todo LIKE '%${searchQ}%' AND priority LIKE '%${priority}%' AND status LIKE '%${status}%' AND category LIKE '%${category}%';`;
+  const dbQuery = `SELECT id,todo,category,priority,status,due_date AS dueDate FROM todo WHERE todo LIKE '%${search_q}%' AND priority LIKE '%${priority}%' AND status LIKE '%${status}%' AND category LIKE '%${category}%';`;
   const dbResponse = await db.all(dbQuery);
   response.send(dbResponse);
 });
@@ -103,7 +103,7 @@ app.get("/agenda/", validation, async (request, response) => {
 //API 4
 app.post("/todos/", validation, async (request, response) => {
   const { id, todo, priority, status, category, dueDate } = request.body;
-  const dbQuery = `INSERT todo (id,todo,category,priority,status,due_date) VALUES (${id},'${todo}','${category}','${priority}','${status}','${dueDate}');`;
+  const dbQuery = `INSERT INTO todo (id,todo,category,priority,status,due_date) VALUES (${id},'${todo}','${category}','${priority}','${status}','${dueDate}');`;
   const dbResponse = await db.run(dbQuery);
   response.send("Todo Successfully Added");
 });
@@ -118,33 +118,38 @@ app.put("/todos/:todoId/", validation, async (request, response) => {
     category = "",
     dueDate = "",
   } = request.query;
-  let dbQuery = null;
+  let dbQuery = ``;
   switch (true) {
     case priority !== "":
-      dbQuery = `UPDATE todo SET priority = '${priority}' WHERE id = todoId;`;
+      dbQuery = `UPDATE todo SET priority = '${priority}' WHERE id = ${todoId};`;
       await db.run(dbQuery);
       response.send("Priority Updated");
+      break;
     case status !== "":
-      dbQuery = `UPDATE todo SET status = '${status}' WHERE id = todoId;`;
+      dbQuery = `UPDATE todo SET status = '${status}' WHERE id = ${todoId};`;
       await db.run(dbQuery);
       response.send("Status Updated");
+      break;
     case category !== "":
-      dbQuery = `UPDATE todo SET category = '${category}' WHERE id = todoId;`;
+      dbQuery = `UPDATE todo SET category = '${category}' WHERE id = ${todoId};`;
       await db.run(dbQuery);
-      response.send(" Updated");
+      response.send("Category Updated");
+      break;
     case dueDate !== "":
-      dbQuery = `UPDATE todo SET due_date = '${dueDate}' WHERE id = todoId;`;
+      dbQuery = `UPDATE todo SET due_date = '${dueDate}' WHERE id = ${todoId};`;
       await db.run(dbQuery);
       response.send("Due Date Updated");
+      break;
     case todo !== "":
-      dbQuery = `UPDATE todo SET todo = '${todo}' WHERE id = todoId;`;
+      dbQuery = `UPDATE todo SET todo = '${todo}' WHERE id = ${todoId};`;
       await db.run(dbQuery);
       response.send("Todo Updated");
+      break;
   }
 });
 
 //API 6
-app.delete("/todo/:todoId", validation, async (request, response) => {
+app.delete("/todo/:todoId/", validation, async (request, response) => {
   const { todoId } = request.params;
   const dbQuery = `DELETE * FROM todo WHERE id = ${todoId};`;
   const dbResponse = await db.run(dbQuery);
