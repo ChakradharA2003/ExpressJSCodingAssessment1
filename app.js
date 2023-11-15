@@ -118,7 +118,7 @@ app.put("/todos/:todoId/", validation, async (request, response) => {
     category = "",
     dueDate = "",
   } = request.query;
-  let dbQuery = ``;
+  let dbQuery = null;
   switch (true) {
     case priority !== "":
       dbQuery = `UPDATE todo SET priority = '${priority}' WHERE id = ${todoId};`;
@@ -149,9 +149,9 @@ app.put("/todos/:todoId/", validation, async (request, response) => {
 });
 
 //API 6
-app.delete("/todo/:todoId/", validation, async (request, response) => {
+app.delete("/todos/:todoId/", validation, async (request, response) => {
   const { todoId } = request.params;
-  const dbQuery = `DELETE * FROM todo WHERE id = ${todoId};`;
+  const dbQuery = `DELETE FROM todo WHERE id = ${todoId};`;
   const dbResponse = await db.run(dbQuery);
   response.send("Todo Deleted");
 });
