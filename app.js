@@ -26,7 +26,7 @@ const initializeDBAndServer = async () => {
 initializeDBAndServer();
 
 const validation = (request, response, next) => {
-  const { priority, status, category, date, searchQ } = request.query;
+  const { priority, status, category, date, search_q } = request.query;
   const priority_arr = ["HIGH", "MEDIUM", "LOW"];
   const status_arr = ["TO DO", "IN PROGRESS", "DONE"];
   const category_arr = ["WORK", "HOME", "LEARNING"];
@@ -37,6 +37,11 @@ const validation = (request, response, next) => {
       response.status(400);
       response.send("Invalid Todo Priority");
     }
+  }
+  if(search_q !== undefined){
+    request.search_q = search_q;
+  } else{
+    request.search_q = "";
   }
   if (status !== undefined) {
     if (status_arr.includes(status) === true) {
@@ -69,7 +74,7 @@ const validation = (request, response, next) => {
       response.send("Invalid Due Date");
     }
   }
-  request.searchQ = searchQ;
+  
   next();
 };
 
@@ -80,7 +85,7 @@ app.get("/todos/", validation, async (request, response) => {
     status = "",
     category = "",
     search_q = "",
-  } = request.query;
+  } = request;
   const dbQuery = `SELECT id,todo,category,priority,status,due_date AS dueDate FROM todo WHERE todo LIKE '%${search_q}%' AND priority LIKE '%${priority}%' AND status LIKE '%${status}%' AND category LIKE '%${category}%';`;
   const dbResponse = await db.all(dbQuery);
   response.send(dbResponse);
