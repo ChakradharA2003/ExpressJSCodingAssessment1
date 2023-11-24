@@ -64,12 +64,12 @@ const validation = (request, response, next) => {
     console.log(date);
     const dates = new Date(date);
     const myDate = format(dates, "yyyy-MM-dd");
-    const year = myDate.getFullYear();
+    /*const year = myDate.getFullYear();
     const month = myDate.getMonth() + 1;
     const date = myDate.getDate();
     const finalDate = new Date(year, month, date);
-    console.log(finalDate);
-    if (isValid(new Date(finalDate)) === true) {
+    console.log(finalDate);*/
+    if (isValid(new Date(myDate)) === true) {
       request.myDate = myDate;
     } else {
       response.status(400);
@@ -97,13 +97,27 @@ app.get("/todos/:todoId/", validation, async (request, response) => {
 //API 3
 app.get("/agenda/", validation, async (request, response) => {
   const { myDate } = request;
+  console.log("My date:" + myDate);
   const dbQuery = `SELECT id,todo,category,priority,status,due_date AS dueDate FROM todo WHERE due_date='${myDate}';`;
-  const dbResponse = await db.get(dbQuery);
+  const dbResponse = await db.all(dbQuery);
   response.send(dbResponse);
 });
 //API 4
 app.post("/todos/", validation, async (request, response) => {
   const { id, todo, priority, status, category, dueDate } = request.body;
+  /*console.log(
+    id +
+      " " +
+      todo +
+      " " +
+      priority +
+      " " +
+      status +
+      " " +
+      category +
+      " " +
+      dueDate
+  );*/
   const dbQuery = `INSERT INTO todo (id,todo,category,priority,status,due_date) VALUES (${id},'${todo}','${category}','${priority}','${status}','${dueDate}');`;
   const dbResponse = await db.run(dbQuery);
   response.send("Todo Successfully Added");
