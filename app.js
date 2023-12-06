@@ -30,7 +30,6 @@ const validation = (request, response, next) => {
   const priority_arr = ["HIGH", "MEDIUM", "LOW"];
   const status_arr = ["TO DO", "IN PROGRESS", "DONE"];
   const category_arr = ["WORK", "HOME", "LEARNING"];
-
   if (priority !== undefined) {
     if (priority_arr.includes(priority) === true) {
       request.priority = priority;
@@ -126,30 +125,45 @@ app.post("/todos/", validation, async (request, response) => {
 //API 5
 app.put("/todos/:todoId/", validation, async (request, response) => {
   const { todoId } = request.params;
-  const { todo, priority, status, category, myDate } = request;
+  const {
+    todo = "",
+    priority = "",
+    status = "",
+    category = "",
+    myDate = "",
+  } = request.body;
   let dbQuery = null;
-  switch (true) {
-    case priority !== undefined:
+  let option = null;
+  let requestObject = [todo, priority, status, category, myDate];
+
+  for (let element of requestObject) {
+    if (element !== "") {
+      console.log(element);
+      option = element;
+    }
+  }
+  switch (option) {
+    case priority:
       dbQuery = `UPDATE todo SET priority = '${priority}' WHERE id = ${todoId};`;
       await db.run(dbQuery);
       response.send("Priority Updated");
       break;
-    case status !== undefined:
+    case status:
       dbQuery = `UPDATE todo SET status = '${status}' WHERE id = ${todoId};`;
       await db.run(dbQuery);
       response.send("Status Updated");
       break;
-    case category !== undefined:
+    case category:
       dbQuery = `UPDATE todo SET category = '${category}' WHERE id = ${todoId};`;
       await db.run(dbQuery);
       response.send("Category Updated");
       break;
-    case dueDate !== undefined:
+    case myDate:
       dbQuery = `UPDATE todo SET due_date = '${myDate}' WHERE id = ${todoId};`;
       await db.run(dbQuery);
       response.send("Due Date Updated");
       break;
-    case todo !== undefined:
+    case todo:
       dbQuery = `UPDATE todo SET todo = '${todo}' WHERE id = ${todoId};`;
       await db.run(dbQuery);
       response.send("Todo Updated");
